@@ -1,8 +1,49 @@
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
-# A port of [SSD: Single Shot MultiBox Detector](https://github.com/weiliu89/caffe/tree/ssd) to [Keras](https://keras.io) framework.
-For more details, please refer to [arXiv paper](http://arxiv.org/abs/1512.02325).
-For forward pass for 300x300 model, please, follow `SSD.ipynb` for examples. For training procedure for 300x300 model, please, follow `SSD_training.ipynb` for examples. Moreover, in `testing_utils` folder there is a useful script to test `SSD` on video or on camera input.
+SSDの実行手順は<code>SSD.ipynb</code>学習手順は<code>SSD_training.ipynb</code>をGitHub上で参照
 
-Weights are ported from the original models and are available [here](https://mega.nz/#F!7RowVLCL!q3cEVRK9jyOSB9el3SssIA). You need `weights_SSD300.hdf5`, `weights_300x300_old.hdf5` is for the old version of architecture with 3x3 convolution for `pool6`.
+<strong>https://github.com/rykov8/ssd_keras を基に作成</strong><br/>
 
-This code was tested with `Keras` v1.2.2, `Tensorflow` v1.0.0, `OpenCV` v3.1.0-dev
+## ssd_layers.pyのv2.xに伴うコード変更
+<pre>
+get_output_shape_for(self, input_shape)
+</pre>
+<pre>
+compute_output_shape(self, input_shape) 
+</pre>
+
+## run.pyのv2.xに伴うコード変更
+<pre>
+model = SSD300(input_shape, num_classes=NUM_CLASSES)
+model.load_weights('weights_SSD300.hdf5', by_name=True)
+</pre>
+<pre>
+model = SSD300(input_shape, num_classes=NUM_CLASSES)
+model.load_weights('weights_SSD300.hdf5', by_name=True)
+model.compile('sgd','mse')
+</pre>
+
+## run.pyの画像trimming codeの追加
+<pre><code>
+    print(coords)
+    # area = [xmin, ymin, xmax, ymax]
+    area = [coords[0][0], coords[0][1], coords[0][0] + coords[1], coords[0][1] + coords[2]]
+    print(area)
+    im = cv2.imread(img_path, 1)
+    dst = im[area[1]: area[3], area[0]: area[2]]
+    rand = random.randint(1,10**10)
+    filepath = 'PASCAL_VOC/barcode/cut_images/' + str(rand) + '.jpg'
+    cv2.imwrite(filepath, dst)
+print(path, 'の切り取り完了')
+</code></pre>
+
+## 複数枚の検出
+<pre>
+img_path = './pics/名前.jpg'
+img = image.load_img(img_path, target_size=(300, 300))
+img = image.img_to_array(img)
+images.append(imread(img_path))
+inputs.append(img.copy())
+</pre>
+を追加
+
+## 実行時の参考
+https://qiita.com/slowsingle/items/64cc927bb29a49a7af14
